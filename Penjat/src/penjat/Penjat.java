@@ -1,152 +1,168 @@
-
-
 package penjat;
 import java.util.Scanner;
-/**
- *
- * @author ricar
- */
+import java.io.IOException;
+ //  @author Ricard
+
 public class Penjat {
-    public static Scanner sc = new Scanner(System.in);
+   static Scanner sc = new Scanner(System.in);
     public static void main(String[] args) {
-        String[] llistaParaules = {"patata", "escola", "poma", "taula", "internet",
-                "llapis", "pantalla", "altaveu", "ordinador", "ratolí"};
-        String paraulaEndevinar;
-
-        paraulaEndevinar = triaParaula(llistaParaules);
-        System.out.println(paraulaEndevinar);
-        if (jugar(paraulaEndevinar) == true) {
-            System.out.println("Enhorabona!!! Has encertat la paraula " + paraulaEndevinar);
-        } else {
-            System.out.println("OOOOOoooohhhh! Has perdut!!\n\n"
-                    + "La paraula secreta era: " + paraulaEndevinar);
-        }
-    }
-
-    public static String triaParaula(String[] llista) {
-        int index = (int) (Math.random() * (llista.length));
-        return llista[index];
-    }
-
-
-    public static boolean jugar(String paraula) {
-        String paraulaParcial = "", lletresDites = "", lletra;
-        Scanner in = new Scanner(System.in);
-        int posicion, encerts = 0, errors = 0;
-
-        for (int i = 0; i < paraula.length(); i++) {
-            paraulaParcial += "*";
-        }
-
-        for (int i = 0; i < 8 && encerts < paraula.length(); i++) {
-            pintarForca(errors);
-            System.out.printf("Paraula: %s%n", paraulaParcial);
-            System.out.printf("Lletres: %s%n", lletresDites);
-            System.out.print("Introdueix lletra: ");
-            lletra = in.nextLine();
-            if (paraula.contains(lletra)) {
-                lletresDites += lletra;
-                posicion = -1;
-                do {
-                    posicion = paraula.indexOf(lletra, posicion+1);
-                    if (posicion >= 0) {
-                        paraulaParcial = paraulaParcial.substring(0, posicion)
-                                + lletra + paraulaParcial.substring(posicion + 1);
-                        encerts++;
-                    }
-                } while (posicion != -1 && posicion < paraula.length()-1);
-            }else{
-                errors++;
+        final char[][] estatPenjatInicial ={
+            {' ',' ',' ',' ','_','_','_','_',' ',' ',' ',' '},                                      
+            {' ',' ',' ','|',' ',' ',' ',' ',' ',' ',' ',' '},
+            {' ',' ',' ','|',' ',' ',' ',' ',' ',' ',' ',' '},
+            {' ',' ',' ','|',' ',' ',' ',' ',' ',' ',' ',' '},
+            {' ',' ',' ','|',' ',' ',' ',' ',' ',' ',' ',' '},
+            {' ',' ',' ','|',' ',' ',' ',' ',' ',' ',' ',' '},
+            {' ','_','_','|','_',' ',' ',' ',' ',' ',' ',' '},                                      
+            {'|',' ',' ',' ',' ','|','_','_','_','_','_',' '},
+            {'|',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','|'},
+            {'|','_','_','_','_','_','_','_','_','_','_','|'}};
+        final String[] paraules = {"patata", "armari", "bicicleta", "advocat", "ascensor", "astronauta",
+            "autopista", "avinguda", "bigoti", "carretera", "castanya", "cervell", "civada", "cultura", "dentista",
+            "esquena", "estrella", "formatge", "gendre", "genoll", "infermera", "internet", "maduixa",
+            "malaltia", "maluc", "mandarina", "maquinista", "motocicleta", "nebot", "pastanaga", "patinet",
+            "perruqueria", "pissarra", "professor", "quadrat", "taronja", "tramvia", "trapezi", "tricicle", "violeta"};
+        String paraula = paraules[(int)(Math.random () * paraules.length)];
+        int totalEncerts = 0, errorsTotals = 0;
+        boolean[] encertsLletres = new boolean[paraula.length()];
+        String lletres = "";
+        char[][] estatPenjat = new char[estatPenjatInicial.length][estatPenjatInicial[0].length];
+        inicialitzarPenjat(estatPenjatInicial, estatPenjat);
+        do {
+            mostrarEstatPenjat(estatPenjat);
+            mostrarParaula(paraula, encertsLletres);
+            char lletra = demanarLletra(lletres);
+            if (comprovacioEncerts(paraula, lletra, encertsLletres)) {
+                totalEncerts += comptaEncerts(paraula, lletra);
+            } else {
+                errorsTotals++;
+                estatPenjat_errors(estatPenjat, errorsTotals);
             }
-        }
-        return (encerts == paraula.length());
-    }
-
-    public static void pintarForca(int nombreErrors){
-        String[] forcaZero = {
-                "   __",
-                "  |    ",
-                "  |",
-                "  |",
-                "  |",
-                "  |",
-                " |",
-                "|   |__",
-                "|          |",
-                "|____|"
-        };
-
-        String[][] forcaErrors = {
-                {"","","","",""},
-                {"|","","","",""},
-                {"|","O","","",""},
-                {"|","O","|","",""},
-                {"|","O","/|","",""},
-                {"|","O","/|\\","",""},
-                {"|","O","/|\\","|",""},
-                {"|","O","/|\\","|","/"},
-                {"|","O","/|\\","|","\\"}
-        };
-
-        System.out.println(forcaZero[0]);
-
-        for (int i = 1; i < 5; i++) {
-            System.out.print(forcaZero[i]);
-            System.out.println(forcaErrors[nombreErrors][i]);
-        }
-
-        for (int i = 5; i < forcaZero.length; i++) {
-            System.out.println(forcaZero[i]);
+            lletres += lletra;
+            System.out.println("Lletres: " + lletres);
+            esborarPantalla();
+        } while (totalEncerts < paraula.length() && errorsTotals <= 7);
+        mostrarEstatPenjat(estatPenjat);
+        mostrarParaula(paraula, encertsLletres);
+        System.out.println("Lletres: " + lletres);
+        if (errorsTotals >= 7) {
+            System.out.println("OOOOOoooohhhh! Has perdut!!\nLa paraula secreta era " + paraula);
+        } else {
+            System.out.println("Felicitats! Has encertat la paraula secreta!!");
         }
     }
-
-}
     
-    
-    public static void mostrarEstatPenjat(char[][] estat) {
+    static void mostrarEstatPenjat(char[][] estat) {
         for (char[] fila : estat) {
             for (char valor : fila) {
                 System.out.print(valor);
             }
+            
             System.out.println("");
         }
     }
     
-    static void inicialitzarEstatPenjat(char[][] estatPenjatIni, char[][] estat) {
-        for (int fila = 0; fila < estatPenjatIni.length; fila++) {
-            for (int columna = 0; columna < estatPenjatIni[0].length; columna++) {
-                estat[fila][columna] = estatPenjatIni[fila][columna];
+    static void inicialitzarPenjat(char[][] estatPenjatInicial, char[][] estat) {
+        for (int fila = 0; fila < estatPenjatInicial.length; fila++) {
+            for (int columna = 0; columna < estatPenjatInicial[0].length; columna++) {
+                estat[fila][columna] = estatPenjatInicial[fila][columna];
             }
         }
     }
     
     static void mostrarParaula(String paraula, boolean[] encertades) {
+        System.out.print("Paraula: ");
+        for (int i = 0; i < paraula.length(); i++) {
+            if (encertades[i]) {
+                System.out.print(paraula.charAt(i));
+            } else {
+                System.out.print("*");
+            }
+        }
         
+        System.out.println("");
     }
     
-    static void mostrarLletresIntroduides(String lletres) {
-        System.out.println("Introdueix una lletra.");
+    static boolean comprovacioEncerts(String paraula, char lletra, boolean[] encerts) {
+        boolean resultat = false;
+        for (int i = 0; i < paraula.length(); i++) {
+            if (paraula.charAt(i) == lletra) {
+                encerts[i] = true;
+                resultat = true;
+            }
+        }
         
+        return resultat;
     }
-    
-    static String demanarLletra(String lletres) {
+
+    static int comptaEncerts(String paraula, char lletra) {
+        int encerts = 0;
+        for (int i = 0; i < paraula.length(); i++) {
+            if (paraula.charAt(i) == lletra) {
+                encerts++;
+            }
+        }
         
-    return lletres;
+        return encerts;
     }
     
-    static boolean existeixLletra(String lletres, char lletra) {
-    
-        return x;
-    }
-    
-    static void actualitzarEstatPenjat(char[][] penjat,int errors) {
+    static char demanarLletra(String lletres) {
+        char lletra;
+        do {
+            System.out.print("Introdueix lletra: ");
+            lletra = sc.nextLine().toLowerCase().charAt(0);
+        } while (!lletraValida(lletra, lletres));
         
+        return lletra;
     }
     
-    static void netejaPantalla() {
-    
+    static boolean lletraRepetida(char lletra, String lletres) {
+        for (int i = 0; i < lletres.length(); i++) {
+            if (lletres.charAt(i) == lletra) {
+                return true;
+            }
+        }
+        
+        return false;
     }
     
+    static boolean lletraValida(char lletra, String lletres) {
+        if (Character.isLetter(lletra) && !lletraRepetida(lletra, lletres)) {
+            return true;
+        } else if (!Character.isLetter(lletra)) {
+            System.out.println("Lletra no vàlida");
+        }
+        
+        return false;
+    }
     
-    
+    static void estatPenjat_errors(char[][] penjat, int errors) {
+        if(errors == 1){
+            penjat[1][8] = '|';
+        }else if(errors == 2){
+            penjat[2][8] = 'O';
+        }else if(errors == 3){
+            penjat[3][8] = '|';
+        }else if(errors == 4){
+            penjat[3][7] = '/';
+        }else if(errors == 5){
+            penjat[3][9] = '\\';
+        }else if(errors == 6){
+            penjat[4][8] = '|';
+        }else if(errors == 7){
+            penjat[5][7] = '/';
+        }else if(errors == 8){
+            penjat[5][9] = '\\';
+        }
+    }
+    static void esborarPantalla() {
+        try {
+            if (System.getProperty("os.name").contains("Windows")) {
+                new ProcessBuilder("cmd", "/c", "cls").inheritIO().start().waitFor();
+            } else {
+                System.out.print("\033[H\033[2J");
+                System.out.flush();
+            }
+        } catch (IOException | InterruptedException ex) {}
+    }
 }
